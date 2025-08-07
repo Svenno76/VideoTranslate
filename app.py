@@ -7,7 +7,16 @@ import time
 import os
 import tempfile
 import shutil
-from pydub import AudioSegment
+
+# Handle pydub import with error handling
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError as e:
+    st.error(f"Audio processing library not available: {e}")
+    st.info("Installing required system dependencies...")
+    PYDUB_AVAILABLE = False
+    
 import zipfile
 from io import BytesIO
 import base64
@@ -50,11 +59,42 @@ st.markdown("""
 
 def check_dependencies():
     """Check if required system dependencies are installed"""
+    missing_deps = []
+    
+    # Check FFmpeg
     try:
         subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
-        return True
     except (subprocess.CalledProcessError, FileNotFoundError):
+        missing_deps.append("FFmpeg")
+    
+    # Check pydub
+    if not PYDUB_AVAILABLE:
+        missing_deps.append("pydub (audio processing)")
+    
+    if missing_deps:
+        st.error("🚨 Missing Dependencies")
+        st.write("The following dependencies are missing:")
+        for dep in missing_deps:
+            st.write(f"❌ {dep}")
+        
+        st.info("**Solution for Streamlit Cloud:**")
+        st.code("""
+# Create/update packages.txt in your repository:
+ffmpeg
+libavcodec-extra
+
+# Update requirements.txt:
+streamlit>=1.28.0
+openai-whisper>=20230314
+deep-translator>=1.11.4
+gtts>=2.3.2
+pydub>=0.25.1
+ffmpeg-python>=0.2.0
+        """)
+        st.write("Then push changes to GitHub and redeploy.")
         return False
+    
+    return True
 
 def extract_audio_segments(video_file, segments, temp_dir):
     """Extract audio segments from video for translation"""

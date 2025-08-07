@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+uploads/
+processed/
+temp/
+*.mp4
+*.wav
+*.mp3
+.env
+git-token.txt
